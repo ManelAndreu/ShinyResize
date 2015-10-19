@@ -1,49 +1,32 @@
 package Vistes;
 
+import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
+import Methods.*;
 import Oth.MainVersion;
-
-import java.awt.Toolkit;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import java.awt.Color;
 
 /**
  * Shiny Resize
@@ -73,16 +56,14 @@ public class Win extends JFrame {
 	private JMenu mnArxiu;
 	private JMenuItem mntmObre;
 
-	public void repainter() {
+	private void repainter() {
 		btnBuscaDir.repaint();
 		btnRed.repaint();
 		lblImg.repaint();
 		tfImg.repaint();
 		tfDir.repaint();
-
 		android.repaint();
 		pers.repaint();
-
 		tfamp.repaint();
 		tflla.repaint();
 		contentPane.repaint();
@@ -132,17 +113,16 @@ public class Win extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				f1 = buscaFitxer(tfImg);
+				f1 = Seek.buscaFitxer(tfImg, jfcDir);
 				try {
-					redimensionaAlMenu(lblImg, imgPanel, f1);
+					Redimensionate.redimensionaAlMenu(lblImg, imgPanel, f1);
 					if (pers.isEnabled()) {
-						actualitzaTamanys(f1);
+						Transform.actualitzaTamanys(f1, pW, pH, tfamp, tflla);
 					} else {
 						android.setEnabled(true);
 						pers.setEnabled(true);
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -181,17 +161,16 @@ public class Win extends JFrame {
 				if (f1 != null && f2 != null && isAndroid) {
 					try {
 
-						redimensionaAndroid();
+						Redimensionate.redimensionaAndroid(androidImgPaths, androidImgFolders, ic_launcher, f1, f2,
+								APATH, Width, Height);
 
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				} else if (f1 != null && f2 != null && !isAndroid && pW > 0 && pH > 0) {
 					try {
-						redimensionaPersonal(f2.getAbsolutePath(), pW, pH);
+						Redimensionate.redimensionaPersonal(f2.getAbsolutePath(), pW, pH, f1);
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				} else {
@@ -261,7 +240,7 @@ public class Win extends JFrame {
 				tflla.setEditable(true);
 				android.setSelected(false);
 				btnBuscaDir.setEnabled(true);
-				actualitzaTamanys(f1);
+				Transform.actualitzaTamanys(f1, pW, pH, tfamp, tflla);
 
 			}
 		});
@@ -289,10 +268,9 @@ public class Win extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				btnRed.setEnabled(true);
 				if (isAndroid && selected) {
-					f2 = buscaAndroidProject(tfDir);
+					f2 = Seek.buscaAndroidProject(tfDir, androidPath, jfcDir);
 				} else if (!isAndroid && selected) {
-					System.out.println("Sida");
-					f2 = buscaCarpeta(tfDir);
+					f2 = Seek.buscaCarpeta(tfDir, f1);
 				} else if (!selected) {
 					JOptionPane.showMessageDialog(null, "Selecciona per a que vols redimensionar!");
 				}
@@ -316,11 +294,10 @@ public class Win extends JFrame {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				// Aci es controla aixo.
 				if (imgRelative && Integer.parseInt(tfamp.getText()) != pW) {
 					auxw = Integer.parseInt(tfamp.getText());
 					auxh = Integer.parseInt(tflla.getText());
-					pH = calculaRelative(auxw, auxh, auxz);
+					pH = Calculate.calculaRelative(auxw, auxh, auxz);
 					tflla.setText(pH + "");
 				}
 				pW = Integer.parseInt(tfamp.getText());
@@ -342,11 +319,10 @@ public class Win extends JFrame {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				// Aci es controla aixo.
 				if (imgRelative && Integer.parseInt(tflla.getText()) != pH) {
 					auxw = Integer.parseInt(tfamp.getText());
 					auxh = Integer.parseInt(tflla.getText());
-					pW = calculaRelative(auxh, auxw, auxz);
+					pW = Calculate.calculaRelative(auxh, auxw, auxz);
 					tfamp.setText(pW + "");
 				}
 				pH = Integer.parseInt(tflla.getText());
@@ -383,8 +359,6 @@ public class Win extends JFrame {
 					relButton.setIcon(new ImageIcon(Win.class.getResource("/img/relNo.png")));
 					imgRelative = false;
 				}
-				System.out.println(imgRelative + "");
-
 			}
 		});
 		relButton.setBounds(276, 151, 25, 20);
@@ -395,270 +369,17 @@ public class Win extends JFrame {
 		btnAndPro.setIcon(new ImageIcon(Win.class.getResource("/img/IconaAnd.png")));
 		btnAndPro.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				androidPath = buscaAndroidStudioFolder();
-				if(androidPath!=""){
+				androidPath = Seek.buscaAndroidStudioFolder(androidPath);
+				if (androidPath != "") {
 					btnBuscaDir.setEnabled(true);
-				}else{
-					JOptionPane.showMessageDialog(null, "Fins que no hi poses una carpeta de Android no podràs seleccionar ningun projecte!");
+				} else {
+					JOptionPane.showMessageDialog(null,
+							"Fins que no hi poses una carpeta de Android no podràs seleccionar ningun projecte!");
 				}
 			}
 		});
 		btnAndPro.setBounds(220, 265, 25, 26);
 		contentPane.add(btnAndPro);
 		repainter();
-	}
-
-	public void actualitzaTamanys(File f) {
-		BufferedImage bi = null;
-		try {
-			bi = ImageIO.read(f);
-			pW = bi.getWidth();
-			pH = bi.getHeight();
-			tfamp.setText(pW + "");
-			tflla.setText(pH + "");
-			if (pW != pH) {
-				JOptionPane.showMessageDialog(null,
-						"Atenció!! El programa encara es troba en desenvolupament i la opció de tamany relatiu no funciona al 100% be, et recomane que el calcules manualment.",
-						"Atenció!!", JOptionPane.WARNING_MESSAGE);
-			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-
-	public void transforma(File f, File fand) throws FileNotFoundException, IOException {
-
-		ImageInputStream in = new FileImageInputStream(f);
-		ImageOutputStream out = new FileImageOutputStream(fand);
-		byte[] buf = new byte[1024];
-		int len;
-		while ((len = in.read(buf)) > 0) {
-			out.write(buf, 0, len);
-		}
-		in.close();
-		out.close();
-
-	}
-
-	public int calculaRelative(int x, int y, int z) {
-		int res = (x * z) / y;
-
-		return res;
-	}
-
-	public void redimensionaPersonal(String path, int width, int height) throws IOException {
-		// String name = JOptionPane.showInputDialog(null, "Posa-li un nom al
-		// teu arxiu.");
-		File f = new File(path/* +"\\"+name+".png" */);
-		System.out.println(path/* +"\\"+name+".png, si soc jo" */);
-		if (f.exists()) {
-			f.delete();
-			f = new File(path/* +"\\"+name+".png" */);
-		}
-		redimensiona(f1, width, height, f.getAbsolutePath());
-
-	}
-
-	public void redimensiona(File f, int wi, int he, String path) throws IOException {
-		BufferedImage bi = null;
-		bi = ImageIO.read(f);
-		int w = bi.getWidth();
-		int h = bi.getHeight();
-		int newW = wi;
-		int newH = he;
-		BufferedImage nbi = new BufferedImage(newW, newH, bi.getType());
-		System.out.println(bi.getType());
-		Graphics2D g = nbi.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.drawImage(bi, 0, 0, newW, newH, 0, 0, w, h, null);
-		g.dispose();
-
-		ImageIcon iinbi = new ImageIcon(nbi);
-
-		File fIcon = imageIconToFile(iinbi, path);
-		File fFinal = new File(fIcon.getAbsolutePath());
-		// Problema
-		System.out.println(fIcon.getAbsolutePath());
-		transforma(fIcon, fFinal);
-
-	}
-	// Estic trabat acii
-
-	public File imageIconToFile(ImageIcon icon, String p) throws IOException {
-		Image img = icon.getImage();
-
-		// BufferedImage bi = new BufferedImage(img.getWidth(null),
-		// img.getHeight(null), BufferedImage.TYPE_INT_RGB);
-		BufferedImage bi = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), 6);
-		Graphics2D g2 = bi.createGraphics();
-		g2.drawImage(img, 0, 0, null);
-		g2.dispose();
-		File f = new File(p);
-		ImageIO.write(bi, "png", f);
-		System.out.println();
-		return f;
-	}
-
-	public void redimensionaAlMenu(JLabel label, JPanel panel, File f) throws IOException {
-		BufferedImage bi = null;
-		bi = ImageIO.read(f);
-		int w = bi.getWidth();
-		int h = bi.getHeight();
-		int newW = panel.getWidth();
-		int newH = panel.getHeight();
-		BufferedImage nbi = new BufferedImage(newW, newH, bi.getType());
-		Graphics2D g = nbi.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.drawImage(bi, 0, 0, newW, newH, 0, 0, w, h, null);
-		g.dispose();
-		ImageIcon iinbi = new ImageIcon(nbi);
-		Icon iNbi = (Icon) (iinbi);
-		label.setIcon(iNbi);
-		label.setVisible(true);
-		label.setBounds(0, 0, panel.getWidth(), panel.getHeight());
-	}
-
-	/**
-	 * Busquem el fitxer que volem copiar
-	 * 
-	 * @param jtf
-	 * @return
-	 * @throws NullPointerException
-	 */
-	public File buscaFitxer(JTextField jtf) throws NullPointerException {
-		JFileChooser jfc;
-		if (jfcDir == null) {
-			jfc = new JFileChooser(System.getProperty("user.home"));
-		} else {
-			jfc = new JFileChooser(jfcDir);
-		}
-		FileNameExtensionFilter filtre = new FileNameExtensionFilter(".jpg, .png, .gif, .bmp", "png", "gif", "jpg",
-				"bmp");
-		jfc.setFileFilter(filtre);
-		int jc = jfc.showOpenDialog(null);
-		if (jc == jfc.APPROVE_OPTION) {
-			jtf.setText(jfc.getSelectedFile().getAbsolutePath().toString());
-			jfcDir = jfc.getCurrentDirectory().getAbsolutePath();
-			File f = new File(jfc.getSelectedFile().getAbsolutePath());
-			return f;
-		} else {
-			JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
-			throw new NullPointerException();
-		}
-	}
-
-	public File buscaCarpeta(JTextField jtf) throws NullPointerException {
-		JOptionPane.showMessageDialog(null, "Selecciona la carpeta on vols que es guarde.");
-
-		JFileChooser jfc = new JFileChooser();
-		jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int jc = jfc.showOpenDialog(null);
-		if (jc == jfc.APPROVE_OPTION) {
-			jtf.setText(jfc.getCurrentDirectory().toString() + "\\" + jfc.getSelectedFile().getName());
-			String nom = JOptionPane.showInputDialog("Com es dirà la teva imatge?",
-					f1.getName().substring(0, f1.getName().indexOf('.')));
-			nom = nom + ".png";
-			File f = new File(
-					jfc.getCurrentDirectory().toString() + "\\" + jfc.getSelectedFile().getName() + "\\" + nom);
-			return f;
-
-		} else {
-			JOptionPane.showMessageDialog(null, "Se esperaba que afegires una carpeta!");
-			throw new NullPointerException();
-		}
-
-	}
-
-	public void redimensionaAndroid() throws FileNotFoundException, IOException {
-		androidImgPaths = new String[androidImgFolders.length];
-		for (int i = 0; i < androidImgFolders.length; i++) {
-			androidImgFolders[i] = f2.getAbsolutePath() + APATH + androidImgFolders[i];
-			File f = new File(androidImgFolders[i]);
-			String[] list = f.list();
-			for (int k = 0; k < list.length; k++) {
-				if (list[k].equals("ic_launcher.png")) {
-					ic_launcher = list[k];
-					System.out.println(ic_launcher);
-				}
-			}
-			if (ic_launcher == null) {
-				ic_launcher = JOptionPane.showInputDialog(null,
-						"Introdueix el nom de la icona que te al manifest de la app (incluint extensió).");
-			}
-
-			String path = androidImgFolders[i] + "\\" + ic_launcher;
-			androidImgPaths[i] = path;
-			f = new File(path);
-			f.delete();
-		}
-		for (int i = 0; i < androidImgFolders.length; i++) {
-			File androidF = new File(androidImgPaths[i]);
-			redimensiona(f1, Width[i], Height[i], androidImgFolders[i] + "\\" + ic_launcher);
-		}
-	}
-
-	public File buscaAndroidProject(JTextField jtf) {
-		JFileChooser jfc;
-//		if (androidPath == null) {
-//			androidPath = JOptionPane.showInputDialog(null, "Introdueix el path on tens els projectes de Android.");
-//		}
-		androidPath = androidPath;
-		jfc = new JFileChooser(androidPath);
-		jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int jc = jfc.showOpenDialog(null);
-		if (jc == jfc.APPROVE_OPTION) {
-			jtf.setText(jfc.getSelectedFile().getAbsolutePath().toString());
-			jfcDir = jfc.getCurrentDirectory().getAbsolutePath();
-			File f = new File(jfc.getSelectedFile().getAbsolutePath());
-			String[] files = f.list();
-			for (int i = 0; i < files.length; i++) {
-				if (files[i].equals("settings.gradle")) {
-					return f;
-				}
-			}
-			JOptionPane.showMessageDialog(null, "No es un projecte Android!!");
-			jtf.setText("");
-			throw new NullPointerException();
-
-		} else {
-			JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
-			throw new NullPointerException();
-		}
-	}
-
-	public String buscaAndroidStudioFolder() {
-		JFileChooser jfc;
-		String returned;
-		if (androidPath == "") {
-			jfc = new JFileChooser();
-			jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			int jc = jfc.showOpenDialog(null);
-			if (jc == jfc.APPROVE_OPTION) {
-				returned =  jfc.getSelectedFile().getAbsolutePath();
-			}else {
-				JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
-				throw new NullPointerException();
-			}
-		return returned;
-		} else {
-			int dec = JOptionPane.showConfirmDialog(null,
-					"Ara tens la carpeta de Android ací: " + androidPath + ". Vols canviar-la?");
-			if (dec == 0) {
-				jfc = new JFileChooser();
-				jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				int jc = jfc.showOpenDialog(null);
-				if (jc == jfc.APPROVE_OPTION) {
-					returned = jfc.getSelectedFile().getAbsolutePath();
-				}else {
-					JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
-					throw new NullPointerException();
-				}
-				return returned;
-			} else if (dec == 1) {
-				return androidPath;
-			}
-			return androidPath;
-		} 
 	}
 }
