@@ -40,6 +40,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import Oth.MainVersion;
 
 import java.awt.Toolkit;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import java.awt.Color;
 
 /**
  * Shiny Resize
@@ -55,7 +59,7 @@ public class Win extends JFrame {
 	private int Height[] = { 72, 48, 96, 144 };
 	private int Width[] = { 72, 48, 96, 144 };
 	private int pW, pH, auxw, auxh, auxz;
-	private JButton btnBuscaDir, btnRed;
+	private JButton btnBuscaDir, btnRed, btnAndPro;
 	private JLabel lblImg;
 	private JTextField tfImg;
 	private JTextField tfDir;
@@ -65,6 +69,9 @@ public class Win extends JFrame {
 	private File f1, f2;
 	private JTextField tfamp;
 	private JTextField tflla;
+	private JMenuBar menuBar;
+	private JMenu mnArxiu;
+	private JMenuItem mntmObre;
 
 	public void repainter() {
 		btnBuscaDir.repaint();
@@ -102,17 +109,47 @@ public class Win extends JFrame {
 	 * Create the frame.
 	 */
 	public Win() {
-		
+		androidPath = "";
 		setTitle("Shiny Resize (v " + MainVersion.V + ")");
-		setIconImage(Toolkit.getDefaultToolkit().getImage(Win.class.getResource("/img/icona.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Win.class.getResource("/img/logo.png")));
 		imgRelative = true;
 		selected = false;
 		this.setVisible(true);
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 510, 335);
+		setBounds(100, 100, 510, 352);
+
+		menuBar = new JMenuBar();
+		menuBar.setBackground(new Color(224, 255, 255));
+		setJMenuBar(menuBar);
+
+		mnArxiu = new JMenu("Arxiu");
+		mnArxiu.setBackground(new Color(230, 230, 250));
+		menuBar.add(mnArxiu);
+
+		mntmObre = new JMenuItem("Obre...");
+		mntmObre.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				f1 = buscaFitxer(tfImg);
+				try {
+					redimensionaAlMenu(lblImg, imgPanel, f1);
+					if (pers.isEnabled()) {
+						actualitzaTamanys(f1);
+					} else {
+						android.setEnabled(true);
+						pers.setEnabled(true);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		mnArxiu.add(mntmObre);
 		contentPane = new JPanel();
-		contentPane.setBackground(SystemColor.inactiveCaption);
+		contentPane.setBackground(new Color(173, 216, 230));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
@@ -173,35 +210,14 @@ public class Win extends JFrame {
 		contentPane.add(tfImg);
 		tfImg.setColumns(10);
 
-		JButton btnSelecImg = new JButton("Selecciona");
-		btnSelecImg.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				f1 = buscaFitxer(tfImg);
-				try {
-					redimensionaAlMenu(lblImg, imgPanel, f1);
-					if (pers.isEnabled()) {
-						actualitzaTamanys(f1);
-					} else {
-						android.setEnabled(true);
-						pers.setEnabled(true);
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});
-		btnSelecImg.setBounds(310, 60, 184, 23);
-		contentPane.add(btnSelecImg);
-
-		JLabel lblSeleccionaUnaImatge = new JLabel("Selecciona una imatge:");
-		lblSeleccionaUnaImatge.setBounds(224, 4, 239, 14);
+		JLabel lblSeleccionaUnaImatge = new JLabel("Direcció de la imatge:");
+		lblSeleccionaUnaImatge.setBounds(219, 4, 239, 14);
 		contentPane.add(lblSeleccionaUnaImatge);
 
 		JPanel typePanel = new JPanel();
 		typePanel.setBackground(SystemColor.activeCaptionBorder);
 		typePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		typePanel.setBounds(368, 120, 126, 73);
+		typePanel.setBounds(368, 113, 126, 73);
 		contentPane.add(typePanel);
 		typePanel.setLayout(null);
 
@@ -221,7 +237,11 @@ public class Win extends JFrame {
 				tflla.setEditable(false);
 				isAndroid = true;
 				selected = true;
-				btnBuscaDir.setEnabled(true);
+				if (androidPath == "") {
+					btnAndPro.setEnabled(true);
+				} else {
+					btnBuscaDir.setEnabled(true);
+				}
 
 			}
 		});
@@ -249,13 +269,13 @@ public class Win extends JFrame {
 		typePanel.add(pers);
 
 		JLabel lblSeleccionaPerA = new JLabel("Selecciona per a que vols redimensionar:");
-		lblSeleccionaPerA.setBounds(255, 95, 239, 14);
+		lblSeleccionaPerA.setBounds(220, 60, 239, 14);
 		contentPane.add(lblSeleccionaPerA);
 
 		tfDir = new JTextField();
 		tfDir.setBackground(SystemColor.activeCaptionBorder);
 		tfDir.setEditable(false);
-		tfDir.setBounds(220, 222, 274, 20);
+		tfDir.setBounds(220, 234, 274, 20);
 		contentPane.add(tfDir);
 		tfDir.setColumns(10);
 
@@ -271,6 +291,7 @@ public class Win extends JFrame {
 				if (isAndroid && selected) {
 					f2 = buscaAndroidProject(tfDir);
 				} else if (!isAndroid && selected) {
+					System.out.println("Sida");
 					f2 = buscaCarpeta(tfDir);
 				} else if (!selected) {
 					JOptionPane.showMessageDialog(null, "Selecciona per a que vols redimensionar!");
@@ -278,15 +299,15 @@ public class Win extends JFrame {
 
 			}
 		});
-		btnBuscaDir.setBounds(310, 253, 184, 23);
+		btnBuscaDir.setBounds(312, 268, 184, 23);
 		contentPane.add(btnBuscaDir);
 
 		JLabel lblAmple = new JLabel("Ample:");
-		lblAmple.setBounds(220, 120, 46, 14);
+		lblAmple.setBounds(220, 126, 46, 14);
 		contentPane.add(lblAmple);
 
 		JLabel lblLlarg = new JLabel("Llarg:");
-		lblLlarg.setBounds(312, 120, 46, 14);
+		lblLlarg.setBounds(312, 126, 46, 14);
 		contentPane.add(lblLlarg);
 
 		tfamp = new JTextField();
@@ -312,7 +333,7 @@ public class Win extends JFrame {
 				}
 			}
 		});
-		tfamp.setBounds(220, 140, 46, 20);
+		tfamp.setBounds(220, 151, 46, 20);
 		contentPane.add(tfamp);
 		tfamp.setColumns(10);
 
@@ -339,13 +360,9 @@ public class Win extends JFrame {
 			}
 		});
 		tflla.setEditable(false);
-		tflla.setBounds(312, 140, 46, 20);
+		tflla.setBounds(310, 151, 46, 20);
 		contentPane.add(tflla);
 		tflla.setColumns(10);
-
-		JLabel lblNotaEstEn = new JLabel("Nota: Est\u00E0 en p\u00EDxels.");
-		lblNotaEstEn.setBounds(220, 171, 126, 14);
-		contentPane.add(lblNotaEstEn);
 
 		JButton relButton = new JButton("");
 		relButton.setToolTipText("Selecciona si vols que es conserve la relaci\u00F3 de mides.");
@@ -370,8 +387,24 @@ public class Win extends JFrame {
 
 			}
 		});
-		relButton.setBounds(276, 140, 25, 20);
+		relButton.setBounds(276, 151, 25, 20);
 		contentPane.add(relButton);
+
+		btnAndPro = new JButton("");
+		btnAndPro.setEnabled(false);
+		btnAndPro.setIcon(new ImageIcon(Win.class.getResource("/img/IconaAnd.png")));
+		btnAndPro.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				androidPath = buscaAndroidStudioFolder();
+				if(androidPath!=""){
+					btnBuscaDir.setEnabled(true);
+				}else{
+					JOptionPane.showMessageDialog(null, "Fins que no hi poses una carpeta de Android no podràs seleccionar ningun projecte!");
+				}
+			}
+		});
+		btnAndPro.setBounds(220, 265, 25, 26);
+		contentPane.add(btnAndPro);
 		repainter();
 	}
 
@@ -567,12 +600,11 @@ public class Win extends JFrame {
 
 	public File buscaAndroidProject(JTextField jtf) {
 		JFileChooser jfc;
-		androidPath = "C:\\Users\\Manel\\AndroidStudioProjects";
-		if (androidPath == null) {
-			androidPath = JOptionPane.showInputDialog(null, "Introdueix el path on tens els projectes de Android.");
-		}
+//		if (androidPath == null) {
+//			androidPath = JOptionPane.showInputDialog(null, "Introdueix el path on tens els projectes de Android.");
+//		}
+		androidPath = androidPath;
 		jfc = new JFileChooser(androidPath);
-
 		jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int jc = jfc.showOpenDialog(null);
 		if (jc == jfc.APPROVE_OPTION) {
@@ -593,5 +625,40 @@ public class Win extends JFrame {
 			JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
 			throw new NullPointerException();
 		}
+	}
+
+	public String buscaAndroidStudioFolder() {
+		JFileChooser jfc;
+		String returned;
+		if (androidPath == "") {
+			jfc = new JFileChooser();
+			jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int jc = jfc.showOpenDialog(null);
+			if (jc == jfc.APPROVE_OPTION) {
+				returned =  jfc.getSelectedFile().getAbsolutePath();
+			}else {
+				JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
+				throw new NullPointerException();
+			}
+		return returned;
+		} else {
+			int dec = JOptionPane.showConfirmDialog(null,
+					"Ara tens la carpeta de Android ací: " + androidPath + ". Vols canviar-la?");
+			if (dec == 0) {
+				jfc = new JFileChooser();
+				jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int jc = jfc.showOpenDialog(null);
+				if (jc == jfc.APPROVE_OPTION) {
+					returned = jfc.getSelectedFile().getAbsolutePath();
+				}else {
+					JOptionPane.showMessageDialog(null, "Se esperaba que afegires un arxiu!");
+					throw new NullPointerException();
+				}
+				return returned;
+			} else if (dec == 1) {
+				return androidPath;
+			}
+			return androidPath;
+		} 
 	}
 }
